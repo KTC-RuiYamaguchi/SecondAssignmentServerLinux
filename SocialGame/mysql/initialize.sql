@@ -47,10 +47,18 @@ CREATE TABLE cards(
     base_atk INT NOT NULL,
     base_def INT NOT NULL,
 
-    -- ★強化・進化用のデータ追加
+    -- ★強化・進化用のデータ
     material_exp INT NOT NULL DEFAULT 100,        -- 素材時の獲得EXP
     evolve_limit INT NOT NULL DEFAULT 1,          -- 進化可能な回数
-    evolve_multiplier DECIMAL(5,2) DEFAULT 1.10   -- 進化時のステータス補正係数
+    evolve_multiplier DECIMAL(5,2) DEFAULT 1.10, -- 進化時のステータス補正係数
+
+    -- ★サムネイル画像
+    thumbnail VARCHAR(255) DEFAULT NULL COMMENT 'カードサムネイル画像のパス',
+
+    -- ★レベルアップ時のステータス上昇量
+    per_level_hp INT NOT NULL DEFAULT 1 COMMENT 'レベルアップ時のHP上昇量',
+    per_level_atk INT NOT NULL DEFAULT 1 COMMENT 'レベルアップ時のATK上昇量',
+    per_level_def INT NOT NULL DEFAULT 1 COMMENT 'レベルアップ時のDEF上昇量'
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- ----------------------------------------
@@ -96,6 +104,6 @@ VALUES
 INSERT INTO users (user_name) VALUES ('user');
 
 INSERT INTO cards 
-(card_name, charactor_id, base_hp, base_atk, base_def, material_exp, evolve_limit, evolve_multiplier)
+(card_name, charactor_id, base_hp, base_atk, base_def, material_exp, evolve_limit, evolve_multiplier, thumbnail, per_level_hp, per_level_atk, per_level_def)
 VALUES
-('card1', 1, 10, 5, 3, 100, 1, 1.10);
+('card1', 1, 10, 5, 3, 100, 1, 1.10, 'card1.webp', 2, 1, 1);
