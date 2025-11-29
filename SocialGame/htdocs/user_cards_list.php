@@ -2,25 +2,30 @@
 session_start();
 if(!isset($_SESSION['user_id'])){ header('Location: login.php'); exit; }
 
-$dsn='mysql:host=mysql;dbname=socialgame;charset=utf8mb4';
-$user='data_user'; $password='data';
+$dsn = 'mysql:host=mysql;dbname=socialgame;charset=utf8mb4';
+$user = 'data_user'; 
+$password = 'data';
 
-try{
-    $pdo=new PDO($dsn,$user,$password,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+try {
+    $pdo = new PDO($dsn, $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 
-    // 所持カード取得
-    $stmt=$pdo->prepare("
-        SELECT uc.*, c.card_name, c.base_hp, c.base_atk, c.base_def, c.thumbnail
+    // 所持カード取得（進化後の名前とレアリティを追加）
+    $stmt = $pdo->prepare("
+        SELECT uc.*, 
+               c.default_name, c.evolved_name, c.base_hp, c.base_atk, c.base_def, c.thumbnail, 
+               r.rarity_name 
         FROM user_cards uc
-        JOIN cards c ON uc.card_id=c.card_id
-        WHERE uc.user_id=?
+        JOIN cards c ON uc.card_id = c.card_id
+        JOIN card_rarity r ON c.rarity_id = r.rarity_id
+        WHERE uc.user_id = ?
         ORDER BY c.card_id
     ");
     $stmt->execute([$_SESSION['user_id']]);
-    $cards=$stmt->fetchAll(PDO::FETCH_ASSOC);
+    $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-}catch(PDOException $e){
-    echo "DB接続エラー: ".$e->getMessage(); exit;
+} catch(PDOException $e) {
+    echo "DB接続エラー: " . $e->getMessage();
+    exit;
 }
 
 // 強化結果モーダル用
@@ -120,14 +125,14 @@ function closeResultModal(){
 <nav><a href="dashboard.php">ダッシュボード</a></nav>
 <h1>自分の所持カード</h1>
 
-<?php if(count($cards)===0): ?>
+<?php if(count($cards) === 0): ?>
 <p>所持カードなし</p>
 <?php else: ?>
 <div style="display:flex; flex-wrap: wrap;">
 <?php foreach($cards as $c): ?>
 <div class="card-container <?php echo $c['is_favorite'] ? 'favorite' : ''; ?>">
     <img src="<?= htmlspecialchars($c['thumbnail'], ENT_QUOTES) ?>" 
-         alt="<?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?>" 
+         alt="<?= htmlspecialchars($c['default_name'], ENT_QUOTES) ?>" 
          onclick="showCardDetail(<?=$c['id']?>)">
     <div class="favorite-star">★</div>
     <div class="level">Lv.<?=$c['level']?></div>
@@ -135,17 +140,18 @@ function closeResultModal(){
     <!-- 詳細モーダル -->
     <div id="detailModal_<?=$c['id']?>" class="modal">
         <div class="modal-content">
-            <h3><?=htmlspecialchars($c['card_name'],ENT_QUOTES)?></h3>
+            <h3><?= htmlspecialchars($c['is_evolved'] ? $c['evolved_name'] : $c['default_name'], ENT_QUOTES) ?></h3>
             <p>レベル: <?=$c['level']?></p>
             <p>HP: <?=$c['base_hp']?></p>
             <p>ATK: <?=$c['base_atk']?></p>
             <p>DEF: <?=$c['base_def']?></p>
+            <p>レアリティ: <?=$c['rarity_name']?></p>
 
             <!-- お気に入り切替ボタン -->
             <form method="post" action="card_action.php" style="display:inline;">
                 <input type="hidden" name="user_card_id" value="<?=$c['id']?>">
-                <input type="hidden" name="action" value="<?=$c['is_favorite']?'unfavorite':'favorite'?>">
-                <button type="submit"><?=$c['is_favorite']?'お気に入り解除':'お気に入り'?></button>
+                <input type="hidden" name="action" value="<?=$c['is_favorite'] ? 'unfavorite' : 'favorite'?>">
+                <button type="submit"><?=$c['is_favorite'] ? 'お気に入り解除' : 'お気に入り'?></button>
             </form>
 
             <!-- 強化ボタン -->
@@ -163,7 +169,7 @@ function closeResultModal(){
 <?php endif; ?>
 
 <!-- 強化結果モーダル -->
-<?php if($str_result==='success'): ?>
+<?php if($str_result === 'success'): ?>
 <div id="resultModal" class="modal" style="display:flex;">
     <div class="modal-content">
         <h2>強化完了！</h2>

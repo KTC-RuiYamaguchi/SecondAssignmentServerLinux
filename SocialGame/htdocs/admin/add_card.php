@@ -11,41 +11,48 @@ $user = 'data_user';
 $password = 'data';
 
 $msg = '';
+$max_level = 100; // デフォルトの最大レベルを100に設定
 
 try {
     $pdo = new PDO($dsn, $user, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
 
+    // 最大レベルをexp_tableから取得
+    $stmt = $pdo->query("SELECT MAX(level) AS max_level FROM exp_table");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $max_level = $result['max_level'] ?? 100; // 最大レベルが取得できない場合は100を使用
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $name       = $_POST['card_name'] ?? '';
-        $char_id    = (int)($_POST['charactor_id'] ?? 0);
-        $base_hp    = (int)($_POST['base_hp'] ?? 0);
-        $base_atk   = (int)($_POST['base_atk'] ?? 0);
-        $base_def   = (int)($_POST['base_def'] ?? 0);
+        $name        = $_POST['card_name'] ?? '';
+        $rarity_id   = (int)($_POST['rarity_id'] ?? 0);
+        $base_hp     = (int)($_POST['base_hp'] ?? 0);
+        $base_atk    = (int)($_POST['base_atk'] ?? 0);
+        $base_def    = (int)($_POST['base_def'] ?? 0);
 
-        $per_level_hp  = (int)($_POST['per_level_hp'] ?? 1);
-        $per_level_atk = (int)($_POST['per_level_atk'] ?? 1);
-        $per_level_def = (int)($_POST['per_level_def'] ?? 1);
+        $per_level_hp   = (int)($_POST['per_level_hp'] ?? 1);
+        $per_level_atk  = (int)($_POST['per_level_atk'] ?? 1);
+        $per_level_def  = (int)($_POST['per_level_def'] ?? 1);
 
-        $material_exp     = (int)($_POST['material_exp'] ?? 100);
-        $evolve_limit     = (int)($_POST['evolve_limit'] ?? 1);
-        $evolve_multiplier= (float)($_POST['evolve_multiplier'] ?? 1.10);
+        $material_exp   = (int)($_POST['material_exp'] ?? 100);
+        $evolve_limit   = isset($_POST['evolve_limit']) ? 1 : 0; // 進化可能かどうかをboolean値で処理
+        $evolve_multiplier = (float)($_POST['evolve_multiplier'] ?? 1.10);
+        $max_level      = (int)($_POST['max_level'] ?? $max_level); // 最大レベルの取得
 
         $thumbnail = $_POST['thumbnail'] ?? '';
+        $evolved_name = $_POST['evolved_name'] ?? ''; // 進化後の名前
 
         if ($name !== '') {
             $stmt = $pdo->prepare("
                 INSERT INTO cards 
-                (card_name, charactor_id, base_hp, base_atk, base_def, 
-                 per_level_hp, per_level_atk, per_level_def,
-                 material_exp, evolve_limit, evolve_multiplier, thumbnail)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (rarity_id, default_name, evolved_name, max_level, base_hp, base_atk, base_def, 
+                 material_exp, evolve_limit, thumbnail, per_level_hp, per_level_atk, per_level_def)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
-                $name, $char_id, $base_hp, $base_atk, $base_def,
-                $per_level_hp, $per_level_atk, $per_level_def,
-                $material_exp, $evolve_limit, $evolve_multiplier, $thumbnail
+                $rarity_id, $name, $evolved_name, $max_level, $base_hp, $base_atk, $base_def, 
+                $material_exp, $evolve_limit, $thumbnail, 
+                $per_level_hp, $per_level_atk, $per_level_def
             ]);
             $msg = "カードを作成しました。";
         } else {
@@ -70,7 +77,24 @@ try {
 <form method="post">
 <h3>基本情報</h3>
 <label>カード名: <input type="text" name="card_name" required></label><br><br>
-<label>キャラクターID: <input type="number" name="charactor_id" value="0"></label><br><br>
+
+<label>レアリティ: 
+<select name="rarity_id" required>
+    <option value="">選択してください</option>
+    <?php
+    // レアリティの選択肢をデータベースから取得
+    $stmt = $pdo->query("SELECT rarity_id, rarity_name FROM card_rarity");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        echo "<option value=\"{$row['rarity_id']}\">{$row['rarity_name']}</option>";
+    }
+    ?>
+</select>
+</label><br><br>
+
+<label>進化後のカード名: <input type="text" name="evolved_name" placeholder="進化後のカード名"></label><br><br> <!-- 進化後の名前入力欄追加 -->
+
+<label>最大レベル: <input type="number" name="max_level" value="<?= $max_level ?>" min="1" max="<?= $max_level ?>" required></label><br><br> <!-- 最大レベル追加, max属性を設定 -->
+
 <label>HP: <input type="number" name="base_hp" value="0"></label><br><br>
 <label>ATK: <input type="number" name="base_atk" value="0"></label><br><br>
 <label>DEF: <input type="number" name="base_def" value="0"></label><br><br>
@@ -82,7 +106,7 @@ try {
 
 <h3>強化・進化関連</h3>
 <label>素材EXP: <input type="number" name="material_exp" value="100"></label><br><br>
-<label>進化上限: <input type="number" name="evolve_limit" value="1"></label><br><br>
+<label>進化上限: <input type="checkbox" name="evolve_limit" value="1" checked> 進化可能</label><br><br> <!-- 進化可能かどうか -->
 <label>進化係数: <input type="number" step="0.01" name="evolve_multiplier" value="1.10"></label><br><br>
 
 <h3>サムネイル画像選択</h3>
