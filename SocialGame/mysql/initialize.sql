@@ -106,4 +106,4 @@ INSERT INTO users (user_name) VALUES ('user');
 INSERT INTO cards 
 (card_name, charactor_id, base_hp, base_atk, base_def, material_exp, evolve_limit, evolve_multiplier, thumbnail, per_level_hp, per_level_atk, per_level_def)
 VALUES
-('card1', 1, 10, 5, 3, 100, 1, 1.10, 'card1.webp', 2, 1, 1);
+('card1', 1, 10, 5, 3, 100, 1, 1.10, '../images/cards/card1.webp', 2, 1, 1);

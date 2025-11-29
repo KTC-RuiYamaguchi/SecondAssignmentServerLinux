@@ -71,5 +71,7 @@ try {
     <button type="submit" name="new_user">ユーザー作成してログイン</button>
 </form>
 
+<p><a href="admin_login.php">管理者画面へ</a></p>
+
 </body>
 </html>
