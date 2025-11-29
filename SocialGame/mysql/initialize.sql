@@ -59,16 +59,15 @@ INSERT INTO card_rarity (rarity_name, description) VALUES
 CREATE TABLE cards(
     card_id INT AUTO_INCREMENT PRIMARY KEY,
     rarity_id INT NOT NULL,  -- カードのレアリティ
-    default_name VARCHAR(255) NOT NULL,  -- 進化前の名前
-    evolved_name VARCHAR(255) DEFAULT NULL,  -- 進化後の名前
-    max_level INT NOT NULL DEFAULT 100,   -- 最大レベルを追加
+    card_name VARCHAR(255) NOT NULL,  -- カード名
+    max_level INT NOT NULL DEFAULT 50,   -- 最大レベルを追加
     base_hp INT NOT NULL,
     base_atk INT NOT NULL,
     base_def INT NOT NULL,
 
     -- ★強化・進化用のデータ
     material_exp INT NOT NULL DEFAULT 100,        -- 素材時の獲得EXP
-    evolve_limit BOOLEAN NOT NULL DEFAULT TRUE,   -- 進化可能かどうか（bool型）
+    evolved_card_id INT DEFAULT NULL,             -- 進化先カードID（NULLなら進化しない）
 
     -- ★サムネイル画像
     thumbnail VARCHAR(255) DEFAULT NULL COMMENT 'カードサムネイル画像のパス',
@@ -88,12 +87,9 @@ CREATE TABLE user_cards(
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     card_id INT NOT NULL,
-
     level INT NOT NULL DEFAULT 1,
     exp INT NOT NULL DEFAULT 0,
-    is_evolved BOOLEAN NOT NULL DEFAULT FALSE,    -- 進化したかどうか（bool型）
     is_favorite BOOLEAN NOT NULL DEFAULT FALSE,   -- お気に入り（ロック）（bool型）
-
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -113,9 +109,9 @@ CREATE TABLE exp_table(
 -- ----------------------------------------
 INSERT INTO exp_table (level, required_exp)
 VALUES 
-(1, 0),      -- レベル1は経験値0でスタート
-(2, 100),    -- レベル2に到達するために必要な合計経験値
-(3, 200),    -- レベル3に到達するために必要な合計経験値
+(1, 0),
+(2, 100),
+(3, 200),
 (4, 300),
 (5, 400),
 (6, 500),
@@ -162,7 +158,7 @@ VALUES
 (47, 4600),
 (48, 4700),
 (49, 4800),
-(50, 4900);  -- レベル50に到達するために必要な合計経験値
+(50, 4900);
 
 -- ----------------------------------------
 -- 初期データ挿入
@@ -171,13 +167,17 @@ VALUES
 INSERT INTO users (user_name) VALUES ('user');
 
 -- cardsテーブルに初期カードを追加
--- rarity_idを1（Common）として、進化前・進化後の名前も設定
 INSERT INTO cards 
-(rarity_id, default_name, evolved_name, max_level, base_hp, base_atk, base_def, material_exp, evolve_limit, thumbnail, per_level_hp, per_level_atk, per_level_def)
+(rarity_id, card_name, max_level, base_hp, base_atk, base_def, material_exp, evolved_card_id, thumbnail, per_level_hp, per_level_atk, per_level_def)
 VALUES
-(1, 'card1', 'card1evolved', 100, 10, 5, 3, 100, TRUE, '../images/cards/card1.webp', 2, 1, 1);
+(1, 'card1', 50, 10, 5, 3, 100, NULL, '../images/cards/card1.webp', 2, 1, 1),
+(2, 'card1evolved', 50, 20, 10, 6, 100, NULL, '../images/cards/card1.webp', 4, 2, 2);
+
+-- 進化前カードに進化後カードIDを設定
+UPDATE cards
+SET evolved_card_id = 2  -- card1の進化後カードIDとしてcard1evolvedのcard_id（2）を設定
+WHERE card_id = 1;
 
 -- user_cardsテーブルに所持カードを追加
-INSERT INTO user_cards (user_id, card_id, level, exp, is_evolved, is_favorite)
-VALUES (1, 1, 1, 0, FALSE, FALSE);
-
+INSERT INTO user_cards (user_id, card_id, level, exp, is_favorite)
+VALUES (1, 1, 1, 0, FALSE);

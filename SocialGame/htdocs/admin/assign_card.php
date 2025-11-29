@@ -65,7 +65,7 @@ try {
 <select name="card_id">
 <option value="">選択してください</option>
 <?php foreach ($cards as $c): ?>
-<option value="<?= $c['card_id'] ?>"><?= htmlspecialchars($c['default_name'], ENT_QUOTES) ?></option>
+<option value="<?= $c['card_id'] ?>"><?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?></option> <!-- card_nameを使用 -->
 <?php endforeach; ?>
 </select>
 </label>

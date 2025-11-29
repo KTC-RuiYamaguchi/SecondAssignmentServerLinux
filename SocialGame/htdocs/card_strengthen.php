@@ -20,7 +20,7 @@ try {
 
     // 強化対象カード取得
     $stmt = $pdo->prepare("
-        SELECT uc.*, c.default_name, c.evolved_name, c.base_hp, c.base_atk, c.base_def, c.thumbnail, c.max_level, uc.is_evolved
+        SELECT uc.*, c.card_name, c.base_hp, c.base_atk, c.base_def, c.thumbnail, c.max_level
         FROM user_cards uc
         JOIN cards c ON uc.card_id = c.card_id
         WHERE uc.id = ? AND uc.user_id = ?
@@ -34,7 +34,7 @@ try {
 
     // 所持カード取得（対象カードを除外）
     $stmt = $pdo->prepare("
-    SELECT uc.*, c.default_name, c.evolved_name, c.material_exp, c.thumbnail, uc.is_favorite
+    SELECT uc.*, c.card_name, c.material_exp, c.thumbnail, uc.is_favorite
     FROM user_cards uc
     JOIN cards c ON uc.card_id = c.card_id
     WHERE uc.user_id = ? AND uc.id <> ?
@@ -42,7 +42,6 @@ try {
     ");
     $stmt->execute([$_SESSION['user_id'], $target_id]);
     $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 } catch (PDOException $e) {
     echo "DB接続エラー: " . $e->getMessage();
@@ -81,11 +80,8 @@ try {
 <body>
 <h1>
     <?php
-    // カードが進化しているかどうかで表示する名前を決定
-    $card_name_display = !empty($target_card['evolved_name']) && $target_card['is_evolved']
-        ? htmlspecialchars($target_card['evolved_name'], ENT_QUOTES)
-        : htmlspecialchars($target_card['default_name'], ENT_QUOTES);
-    echo $card_name_display;
+    // カード名をそのまま表示
+    echo htmlspecialchars($target_card['card_name'], ENT_QUOTES);
     ?>
     の強化素材選択
 </h1>
@@ -110,11 +106,8 @@ try {
                         </div>
                         <div style="text-align: center;">
                             <?php
-                            // 進化前後のカード名を選択して表示
-                            $card_name_display = !empty($c['evolved_name']) && $c['is_evolved']
-                                ? htmlspecialchars($c['evolved_name'], ENT_QUOTES)
-                                : htmlspecialchars($c['default_name'], ENT_QUOTES);
-                            echo $card_name_display;
+                            // カード名をそのまま表示
+                            echo htmlspecialchars($c['card_name'], ENT_QUOTES);
                             ?>
                             <div class="card-level">Lv.<?= $c['level'] ?></div>
                         </div>

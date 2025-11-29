@@ -33,7 +33,7 @@ try {
 
                 // 対象カード取得
                 $stmt = $pdo->prepare("
-                    SELECT uc.*, c.default_name, c.base_hp, c.base_atk, c.base_def, c.max_level, c.material_exp, c.evolve_limit, c.evolved_name
+                    SELECT uc.*, c.card_name, c.base_hp, c.base_atk, c.base_def, c.max_level, c.material_exp
                     FROM user_cards uc
                     JOIN cards c ON uc.card_id = c.card_id
                     WHERE uc.id = ? AND uc.user_id = ?
@@ -47,8 +47,6 @@ try {
                 $old_atk = $target_card['base_atk'];
                 $old_def = $target_card['base_def'];
                 $max_level = $target_card['max_level'];
-                $evolve_limit = $target_card['evolve_limit'];
-                $evolved_name = $target_card['evolved_name'];
 
                 // 素材カードの合計EXP
                 $in = str_repeat('?,', count($material_ids)-1) . '?';
@@ -78,21 +76,6 @@ try {
                     $level = 1;
                 }
 
-                // 進化判定
-                if ($evolve_limit && $level >= $max_level) {
-                    if ($evolved_name) {
-                        $stmt = $pdo->prepare("
-                            UPDATE user_cards 
-                            SET card_id = (SELECT card_id FROM cards WHERE default_name = ?) 
-                            WHERE id = ? AND user_id = ?
-                        ");
-                        $stmt->execute([$evolved_name, $target_id, $_SESSION['user_id']]);
-                        $msg = "カードが進化しました。";
-                    } else {
-                        throw new Exception("進化後のカード名が設定されていません。");
-                    }
-                }
-
                 // 対象カード更新
                 $stmt = $pdo->prepare("UPDATE user_cards SET exp = ?, level = ? WHERE id = ?");
                 $stmt->execute([$new_exp, $level, $target_id]);
@@ -104,7 +87,7 @@ try {
                 // モーダル表示用パラメータ付きでリダイレクト
                 header("Location: user_cards_list.php?strengthen_result=success"
                     . "&card_id={$target_id}"
-                    . "&card_name=" . urlencode($target_card['default_name'])
+                    . "&card_name=" . urlencode($target_card['card_name'])
                     . "&old_level={$old_level}&new_level={$level}"
                     . "&old_hp={$old_hp}&new_hp={$old_hp}"
                     . "&old_atk={$old_atk}&new_atk={$old_atk}"

@@ -12,7 +12,7 @@ try {
     // 所持カード取得（進化後の名前とレアリティを追加）
     $stmt = $pdo->prepare("
         SELECT uc.*, 
-               c.default_name, c.evolved_name, c.base_hp, c.base_atk, c.base_def, c.thumbnail, 
+               c.card_name, c.base_hp, c.base_atk, c.base_def, c.thumbnail, 
                r.rarity_name 
         FROM user_cards uc
         JOIN cards c ON uc.card_id = c.card_id
@@ -132,7 +132,7 @@ function closeResultModal(){
 <?php foreach($cards as $c): ?>
 <div class="card-container <?php echo $c['is_favorite'] ? 'favorite' : ''; ?>">
     <img src="<?= htmlspecialchars($c['thumbnail'], ENT_QUOTES) ?>" 
-         alt="<?= htmlspecialchars($c['default_name'], ENT_QUOTES) ?>" 
+         alt="<?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?>" 
          onclick="showCardDetail(<?=$c['id']?>)">
     <div class="favorite-star">★</div>
     <div class="level">Lv.<?=$c['level']?></div>
@@ -140,7 +140,7 @@ function closeResultModal(){
     <!-- 詳細モーダル -->
     <div id="detailModal_<?=$c['id']?>" class="modal">
         <div class="modal-content">
-            <h3><?= htmlspecialchars($c['is_evolved'] ? $c['evolved_name'] : $c['default_name'], ENT_QUOTES) ?></h3>
+            <h3><?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?></h3>
             <p>レベル: <?=$c['level']?></p>
             <p>HP: <?=$c['base_hp']?></p>
             <p>ATK: <?=$c['base_atk']?></p>
