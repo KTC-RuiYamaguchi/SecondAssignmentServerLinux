@@ -74,9 +74,10 @@ if ($evolve_result === 'success') {
 <head>
 <meta charset="UTF-8">
 <title>所持カード一覧</title>
-
+<link rel="stylesheet" href="footer_style.css">
 <style>
-body { font-family: sans-serif; }
+body { font-family: sans-serif; margin:0; padding-bottom:70px; } 
+.card-area { display:flex; flex-wrap:wrap; justify-content:center; }
 
 .card-area {
     display: flex;
@@ -166,11 +167,9 @@ function closeModal(id){
 }
 </script>
 </head>
-
 <body>
 
-<nav><a href="dashboard.php">ダッシュボード</a></nav>
-<h1>所持カード一覧</h1>
+<h1 style="text-align:center;">所持カード一覧</h1>
 
 <div class="card-area">
 <?php foreach ($cards as $c): ?>
@@ -255,6 +254,8 @@ function closeModal(id){
     </div>
 </div>
 <?php endif; ?>
+
+<?php include 'footer.php'; ?>
 
 </body>
 </html>

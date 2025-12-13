@@ -14,7 +14,7 @@ try {
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
 
-    // ログイン中ユーザーの名前を取得
+    // ログイン中ユーザーの名前取得
     $stmt = $pdo->prepare("SELECT user_name FROM users WHERE user_id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -25,15 +25,38 @@ try {
     exit;
 }
 ?>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ダッシュボード</title>
+<link rel="stylesheet" href="footer_style.css">
+<style>
+body {
+    margin:0;
+    font-family:"Segoe UI", Roboto, sans-serif;
+    background:#f4f6f8;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
 
-<nav>
-    <!-- プレイヤー用リンクのみ -->
-    <a href="user_cards_list.php">自分の所持カード</a> |
-    <a href="logout.php">ログアウト</a>
-</nav>
+main {
+    flex:1;
+    padding:20px;
+    text-align:center;
+}
+</style>
+</head>
+<body>
 
-<h1>ダッシュボード</h1>
-<p>ようこそ、<?= htmlspecialchars($user_name, ENT_QUOTES) ?> さん</p>
+<main>
+    <h1>ようこそ、<?= htmlspecialchars($user_name, ENT_QUOTES) ?> さん</h1>
+    <p>フッターボタンから所持カード一覧やホーム、ログアウトにアクセスできます。</p>
+</main>
 
-<p>ダッシュボードでは、所持カードの一覧を確認できます。</p>
-<p>カードの詳細を見る場合は「自分の所持カード」リンクをクリックしてください。</p>
+<?php include 'footer.php'; ?>
+
+</body>
+</html>
