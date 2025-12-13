@@ -109,6 +109,84 @@ try {
                 header('Location: user_cards_list.php');
                 exit;
                 break;
+            
+            // =========================
+            // 進化
+            // =========================
+            case 'evolve':
+
+                $target_id = $_POST['target_card_id'] ?? null;
+                if (!$target_id) {
+                    throw new Exception("進化対象カードが指定されていません。");
+                }
+
+                // 対象カード取得（進化先ID・最大レベル）
+                $stmt = $pdo->prepare("
+                    SELECT 
+                        uc.id AS user_card_id,
+                        uc.card_id AS before_card_id,
+                        uc.level,
+                        c.evolved_card_id,
+                        c.max_level
+                    FROM user_cards uc
+                    JOIN cards c ON uc.card_id = c.card_id
+                    WHERE uc.id = ? AND uc.user_id = ?
+                ");
+                $stmt->execute([$target_id, $_SESSION['user_id']]);
+                $card = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$card) {
+                    throw new Exception("カードが見つかりません。");
+                }
+
+                if (empty($card['evolved_card_id'])) {
+                    throw new Exception("このカードは進化できません。");
+                }
+
+                if ($card['level'] < $card['max_level']) {
+                    throw new Exception("レベルが最大に達していません。");
+                }
+
+                $before_card_id  = $card['before_card_id'];
+                $after_card_id   = $card['evolved_card_id'];
+
+                // ===== トランザクション開始 =====
+                $pdo->beginTransaction();
+
+                try {
+                    // 元カード削除
+                    $stmt = $pdo->prepare("
+                        DELETE FROM user_cards
+                        WHERE id = ? AND user_id = ?
+                    ");
+                    $stmt->execute([$target_id, $_SESSION['user_id']]);
+
+                    // 進化後カード付与（Lv1, EXP0）
+                    $stmt = $pdo->prepare("
+                        INSERT INTO user_cards (user_id, card_id, level, exp)
+                        VALUES (?, ?, 1, 0)
+                    ");
+                    $stmt->execute([
+                        $_SESSION['user_id'],
+                        $after_card_id
+                    ]);
+
+                    $pdo->commit();
+
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    throw $e;
+                }
+
+                // 進化結果モーダル用リダイレクト
+                header(
+                    'Location: user_cards_list.php'
+                    . '?evolve_result=success'
+                    . '&before_card_id=' . $before_card_id
+                    . '&after_card_id=' . $after_card_id
+                );
+                exit;
+
 
             default:
                 throw new Exception("不明な操作です。");
