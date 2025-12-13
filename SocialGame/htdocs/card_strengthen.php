@@ -11,13 +11,9 @@ if (!$target_id) {
     exit; 
 }
 
-$dsn = 'mysql:host=mysql;dbname=socialgame;charset=utf8mb4';
-$user = 'data_user';
-$password = 'data';
+require 'db_connect.php'; // 共通DB接続
 
 try {
-    $pdo = new PDO($dsn, $user, $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
     // 強化対象カード取得
     $stmt = $pdo->prepare("
         SELECT uc.*, c.card_name, c.base_hp, c.base_atk, c.base_def, c.thumbnail, c.max_level
@@ -32,13 +28,13 @@ try {
         exit; 
     }
 
-    // 所持カード取得（対象カードを除外）
+    // 素材用カード取得（対象カードを除外）
     $stmt = $pdo->prepare("
-    SELECT uc.*, c.card_name, c.material_exp, c.thumbnail, uc.is_favorite
-    FROM user_cards uc
-    JOIN cards c ON uc.card_id = c.card_id
-    WHERE uc.user_id = ? AND uc.id <> ?
-    ORDER BY c.card_id
+        SELECT uc.*, c.card_name, c.material_exp, c.thumbnail, uc.is_favorite
+        FROM user_cards uc
+        JOIN cards c ON uc.card_id = c.card_id
+        WHERE uc.user_id = ? AND uc.id <> ?
+        ORDER BY c.card_id
     ");
     $stmt->execute([$_SESSION['user_id'], $target_id]);
     $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -47,78 +43,38 @@ try {
     echo "DB接続エラー: " . $e->getMessage();
     exit;
 }
+
+$mode = 'select'; // 強化用モード
 ?>
 
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>強化素材選択</title>
-    <style>
-        .disabled {
-            color: #999;
-            pointer-events: none; /* クリック無効化 */
-        }
-        .card-image {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            margin: 5px;
-            border: 2px solid transparent;
-        }
-        .disabled-card {
-            filter: grayscale(100%); /* お気に入りカードをグレーアウト */
-            opacity: 0.5;
-        }
-        .card-level {
-            font-weight: bold;
-            margin-top: 5px;
-            text-align: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>強化素材選択</title>
+<link rel="stylesheet" href="style/card_style.css">
 </head>
 <body>
+
 <h1>
-    <?php
-    // カード名をそのまま表示
-    echo htmlspecialchars($target_card['card_name'], ENT_QUOTES);
-    ?>
-    の強化素材選択
+    <?= htmlspecialchars($target_card['card_name'], ENT_QUOTES) ?> の強化素材選択
 </h1>
 
+<?php if (count($cards) === 0): ?>
+    <p>素材にできるカードがありません。</p>
+<?php else: ?>
 <form method="post" action="card_action.php">
     <input type="hidden" name="action" value="strengthen">
     <input type="hidden" name="target_card_id" value="<?= $target_card['id'] ?>">
 
-    <?php if (count($cards) === 0): ?>
-        <p>素材にできるカードがありません。</p>
-    <?php else: ?>
-        <ul style="display: flex; flex-wrap: wrap;">
-            <?php foreach ($cards as $c): 
-                $disabled = $c['is_favorite'] ? 'disabled' : ''; 
-                $class = $c['is_favorite'] ? 'disabled-card' : ''; 
-            ?>
-                <li style="list-style-type: none; margin: 10px;">
-                    <label class="<?= $disabled ?>">
-                        <input type="checkbox" name="material_card_ids[]" value="<?= $c['id'] ?>" <?= $c['is_favorite'] ? 'disabled' : '' ?>>
-                        <div class="<?= $class ?>">
-                            <img src="<?= htmlspecialchars($c['thumbnail'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?>" class="card-image">
-                        </div>
-                        <div style="text-align: center;">
-                            <?php
-                            // カード名をそのまま表示
-                            echo htmlspecialchars($c['card_name'], ENT_QUOTES);
-                            ?>
-                            <div class="card-level">Lv.<?= $c['level'] ?></div>
-                        </div>
-                    </label>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-        <button type="submit">強化実行</button>
-    </form>
-    <?php endif; ?>
+    <?php include 'style/card_list_template.php'; ?>
 
-    <p><a href="user_cards_list.php">戻る</a></p>
+    <div style="margin-top:10px;">
+        <button type="submit">強化実行</button>
+        <a href="user_cards_list.php" style="margin-left:10px;">戻る</a>
+    </div>
+</form>
+<?php endif; ?>
+
 </body>
 </html>

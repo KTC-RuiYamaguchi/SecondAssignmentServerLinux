@@ -40,7 +40,10 @@ if ($evolve_result === 'success') {
         $after_card = $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
+
+$mode = 'display';
 ?>
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
