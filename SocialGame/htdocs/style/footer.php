@@ -1,16 +1,36 @@
 <div id="transitionOverlay"></div>
 
+<link rel="stylesheet" href="style/footer_style.css">
+
 <div class="footer">
-    <a class="footer-button" href="dashboard.php" onclick="event.preventDefault(); transitionTo(this.href)">ホーム</a>
-    <a class="footer-button" href="user_cards_list.php" onclick="event.preventDefault(); transitionTo(this.href)">カード一覧</a>
+    <a class="footer-button" href="dashboard.php">ホーム</a>
+    <a class="footer-button" href="user_cards_list.php">カード一覧</a>
     <!-- 他のボタンも追加可能 -->
 </div>
 
+
+
 <script>
-function transitionTo(url){
+// ページ読み込み時にフェードイン
+window.addEventListener('load', () => {
     const overlay = document.getElementById('transitionOverlay');
-    overlay.style.pointerEvents = 'auto';
-    overlay.style.opacity = '1';
-    setTimeout(()=>{ window.location.href = url; }, 450);
-}
+    // 1フレーム後にfadeoutクラス追加でフェードイン開始
+    requestAnimationFrame(() => {
+        overlay.classList.add('fadeout');
+    });
+});
+
+// フッターボタン押下でフェードアウト → 遷移
+document.querySelectorAll('.footer-button').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.preventDefault();
+        const overlay = document.getElementById('transitionOverlay');
+        overlay.classList.remove('fadeout');
+        overlay.classList.add('active');
+
+        setTimeout(() => {
+            window.location.href = btn.href;
+        }, 450); // CSS transitionに合わせる
+    });
+});
 </script>

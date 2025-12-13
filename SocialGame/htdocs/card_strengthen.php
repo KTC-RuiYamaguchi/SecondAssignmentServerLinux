@@ -56,6 +56,8 @@ $mode = 'select'; // 強化用モード
 </head>
 <body>
 
+<?php include 'style/footer.php'; ?>
+
 <h1>
     <?= htmlspecialchars($target_card['card_name'], ENT_QUOTES) ?> の強化素材選択
 </h1>

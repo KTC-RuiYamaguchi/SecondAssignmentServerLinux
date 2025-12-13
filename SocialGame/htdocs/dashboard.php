@@ -30,8 +30,8 @@ try {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>ダッシュボード</title>
-<link rel="stylesheet" href="style/footer_style.css">
 <style>
 body {
     margin:0;
@@ -51,12 +51,14 @@ main {
 </head>
 <body>
 
+<?php include 'style/footer.php'; ?>
+
 <main>
     <h1>ようこそ、<?= htmlspecialchars($user_name, ENT_QUOTES) ?> さん</h1>
     <p>フッターボタンから所持カード一覧やホーム、ログアウトにアクセスできます。</p>
 </main>
 
-<?php include 'style/footer.php'; ?>
+
 
 </body>
 </html>

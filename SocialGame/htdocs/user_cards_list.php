@@ -49,7 +49,7 @@ $mode = 'display';
 <head>
 <meta charset="UTF-8">
 <title>所持カード一覧</title>
-<link rel="stylesheet" href="style/footer_style.css">
+
 <link rel="stylesheet" href="style/card_style.css">
 <script>
 function openModal(id){ document.getElementById(id)?.classList.add('show'); }
@@ -57,6 +57,9 @@ function closeModal(id){ document.getElementById(id)?.classList.remove('show'); 
 </script>
 </head>
 <body>
+
+<?php include 'style/footer.php'; ?>
+
 <h1 style="text-align:center;">所持カード一覧</h1>
 
 <?php include 'style/card_list_template.php'; ?>
@@ -94,6 +97,6 @@ function closeModal(id){ document.getElementById(id)?.classList.remove('show'); 
 </div>
 <?php endif; ?>
 
-<?php include 'style/footer.php'; ?>
+
 </body>
 </html>
