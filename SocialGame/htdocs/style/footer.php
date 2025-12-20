@@ -8,7 +8,8 @@
     <!-- 他のボタンも追加可能 -->
 </div>
 
-
+<!-- フッター用CSS -->
+<link rel="stylesheet" href="/style/footer_style.css">
 
 <script>
 // ページ読み込み時にフェードイン

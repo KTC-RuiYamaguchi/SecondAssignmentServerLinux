@@ -1,4 +1,18 @@
-/* フッター固定・スタイル */
+/* =========================
+   画面全体背景グラデーション
+========================= */
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #f0f4ff 0%, #d0e0ff 50%, #a0c0ff 100%);
+    background-attachment: fixed;
+}
+
+/* =========================
+   フッター固定
+========================= */
 .footer {
     position: fixed;
     bottom: 0;
@@ -32,13 +46,15 @@
     background: #444;
 }
 
-/* ページ遷移オーバーレイ */
+/* =========================
+   ページ遷移オーバーレイ
+========================= */
 #transitionOverlay {
     position: fixed;
     inset: 0;
     background: #ffffff;
     z-index: 10000;
-    opacity: 1; /* 初期状態は白で画面を覆う */
+    opacity: 1;
     pointer-events: auto;
     transition: opacity 0.45s ease;
 }
