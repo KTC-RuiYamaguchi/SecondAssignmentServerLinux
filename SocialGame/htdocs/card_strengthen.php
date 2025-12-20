@@ -53,11 +53,11 @@ $mode = 'select'; // 強化用モード
 <meta charset="UTF-8">
 <title>強化素材選択</title>
 <link rel="stylesheet" href="style/card_style.css">
+<link rel="stylesheet" href="style/card_button.css">
 </head>
 <body>
 
 <?php include 'style/footer.php'; ?>
-
 <h1>
     <?= htmlspecialchars($target_card['card_name'], ENT_QUOTES) ?> の強化素材選択
 </h1>
@@ -71,10 +71,11 @@ $mode = 'select'; // 強化用モード
 
     <?php include 'style/card_list_template.php'; ?>
 
-    <div style="margin-top:10px;">
-        <button type="submit">強化実行</button>
-        <a href="user_cards_list.php" style="margin-left:10px;">戻る</a>
-    </div>
+    <div class="card-action-buttons">
+    <button type="submit" class="card-action-button">強化実行</button>
+    <a href="user_cards_list.php" class="card-action-button back">戻る</a>
+</div>
+
 </form>
 <?php endif; ?>
 

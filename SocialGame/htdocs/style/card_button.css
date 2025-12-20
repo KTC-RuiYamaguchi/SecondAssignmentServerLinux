@@ -1,0 +1,41 @@
+/* 強化ボタン・戻るボタン共通 */
+.card-action-button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #ff7b73, #ffea5f, #87fff7);
+    background-size: 300% 300%;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-position 1s ease;
+    text-decoration: none;
+}
+
+/* ボタンコンテナを中央配置 */
+.card-action-buttons {
+    display: flex;
+    justify-content: center; /* 横方向中央 */
+    gap: 12px;              /* ボタン間の間隔 */
+    margin-top: 20px;
+}
+
+/* ホバー時に背景がスライド＆少し浮く */
+.card-action-button:hover {
+    transform: translateY(-4px);
+    background-position: 100% 0;
+}
+
+/* 戻るボタン用の少し落ち着いた色味 */
+.card-action-button.back {
+    background: linear-gradient(135deg, #444, #666);
+    color: #fff;
+}
+
+.card-action-button.back:hover {
+    background-position: 100% 0;
+    transform: translateY(-4px);
+}
