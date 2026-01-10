@@ -34,6 +34,7 @@ DROP TABLE IF EXISTS card_rarity;
 CREATE TABLE users(
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     user_name VARCHAR(255) NOT NULL,
+    user_coins INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -161,10 +162,53 @@ VALUES
 (50, 4900);
 
 -- ----------------------------------------
+-- ガチャのマスターテーブル
+-- ----------------------------------------
+CREATE TABLE gachas (
+    gacha_id INT AUTO_INCREMENT PRIMARY KEY,
+    gacha_name VARCHAR(100) NOT NULL,
+    description TEXT DEFAULT NULL,
+    cost INT NOT NULL DEFAULT 0 COMMENT '消費ポイント（仮）',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- ----------------------------------------
+-- ガチャの排出内容、重み設定用
+-- ----------------------------------------
+CREATE TABLE gacha_items (
+    gacha_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    gacha_id INT NOT NULL,
+    card_id INT NOT NULL,
+    weight INT NOT NULL COMMENT '抽選重み',
+
+    FOREIGN KEY (gacha_id) REFERENCES gachas(gacha_id) ON DELETE CASCADE,
+    FOREIGN KEY (card_id) REFERENCES cards(card_id) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- ----------------------------------------
+-- ガチャ履歴用テーブル
+-- ----------------------------------------
+CREATE TABLE gacha_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    gacha_id INT NOT NULL,
+    card_id INT NOT NULL,
+    coins_spent INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (gacha_id) REFERENCES gachas(gacha_id) ON DELETE CASCADE,
+    FOREIGN KEY (card_id) REFERENCES cards(card_id) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- ----------------------------------------
 -- 初期データ挿入
 -- ----------------------------------------
 -- usersテーブルに初期ユーザーを追加
-INSERT INTO users (user_name) VALUES ('ユーザー1');
+INSERT INTO users 
+(user_name, user_coins) 
+VALUES ('ユーザー1', 10000);
 
 -- cardsテーブルに初期カードを追加
 INSERT INTO cards 
@@ -172,7 +216,17 @@ INSERT INTO cards
 VALUES
 (1, 'カード1', 50, 10, 5, 3, 100, NULL, '../images/cards/card9.webp', 2, 1, 1),
 (2, '超カード1', 50, 20, 10, 6, 100, NULL, '../images/cards/card6.webp', 4, 2, 2),
-(3, '強化カード', 1, 10, 10, 10, 5000, NULL, '../images/cards/card8.webp', 0, 0, 0);
+(3, '強化カード', 1, 10, 10, 10, 5000, NULL, '../images/cards/card8.webp', 0, 0, 0),
+(1, 'アリサ・ブロッサム', 50, 12, 6, 4, 100, NULL, '../images/cards/card1.webp', 2, 1, 1),
+(2, 'ミユキ・スノウ', 50, 15, 7, 5, 100, NULL, '../images/cards/card2.webp', 3, 2, 2),
+(1, 'サクラ・リリィ', 50, 13, 5, 5, 100, NULL, '../images/cards/card3.webp', 2, 1, 1),
+(3, 'ユイ・スターライト', 50, 20, 10, 8, 200, NULL, '../images/cards/card4.webp', 4, 3, 2),
+(2, 'ハナ・ローズ', 50, 18, 8, 6, 100, NULL, '../images/cards/card5.webp', 3, 2, 2),
+(1, 'リナ・チェリー', 50, 14, 5, 5, 100, NULL, '../images/cards/card6.webp', 2, 1, 1),
+(4, 'カレン・ムーン', 50, 25, 12, 10, 300, NULL, '../images/cards/card7.webp', 5, 4, 3),
+(3, 'アイリ・フェアリー', 50, 22, 9, 7, 150, NULL, '../images/cards/card8.webp', 4, 3, 2),
+(2, 'ノゾミ・ブロッサム', 50, 19, 8, 6, 100, NULL, '../images/cards/card9.webp', 3, 2, 2),
+(1, 'ヒカリ・スカイ', 50, 13, 6, 5, 100, NULL, '../images/cards/card10.webp', 2, 1, 1);
 
 -- 進化前カードに進化後カードIDを設定
 UPDATE cards
@@ -184,3 +238,26 @@ INSERT INTO user_cards (user_id, card_id, level, exp, is_favorite)
 VALUES 
 (1, 1, 1, 0, FALSE),
 (1, 3, 1, 0, FALSE);
+
+-- ----------------------------------------
+-- ガチャ初期データ
+-- ----------------------------------------
+-- 単発ガチャを作成
+INSERT INTO gachas (gacha_name, description, cost, is_active)
+VALUES ('テストガチャ', 'テスト用の単発ガチャ', 100, TRUE);
+
+-- 作成したガチャIDを取得（今回は1固定でもOK）
+SET @gacha_id = LAST_INSERT_ID();
+
+-- gachas_items にカードを登録（重み付き）
+INSERT INTO gacha_items (gacha_id, card_id, weight) VALUES
+(@gacha_id, 4, 10),  -- アリサ・ブロッサム
+(@gacha_id, 5, 9),   -- ミユキ・スノウ
+(@gacha_id, 6, 8),   -- サクラ・リリィ
+(@gacha_id, 7, 7),   -- ユイ・スターライト
+(@gacha_id, 8, 6),   -- ハナ・ローズ
+(@gacha_id, 9, 5),   -- リナ・チェリー
+(@gacha_id, 10, 4),  -- カレン・ムーン
+(@gacha_id, 11, 3),  -- アイリ・フェアリー
+(@gacha_id, 12, 2),  -- ノゾミ・ブロッサム
+(@gacha_id, 13, 1);  -- ヒカリ・スカイ
