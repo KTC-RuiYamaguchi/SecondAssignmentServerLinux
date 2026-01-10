@@ -164,14 +164,15 @@ VALUES
 -- 初期データ挿入
 -- ----------------------------------------
 -- usersテーブルに初期ユーザーを追加
-INSERT INTO users (user_name) VALUES ('user');
+INSERT INTO users (user_name) VALUES ('ユーザー1');
 
 -- cardsテーブルに初期カードを追加
 INSERT INTO cards 
 (rarity_id, card_name, max_level, base_hp, base_atk, base_def, material_exp, evolved_card_id, thumbnail, per_level_hp, per_level_atk, per_level_def)
 VALUES
-(1, 'card1', 50, 10, 5, 3, 100, NULL, '../images/cards/card1.webp', 2, 1, 1),
-(2, 'card1evolved', 50, 20, 10, 6, 100, NULL, '../images/cards/card1.webp', 4, 2, 2);
+(1, 'カード1', 50, 10, 5, 3, 100, NULL, '../images/cards/card9.webp', 2, 1, 1),
+(2, '超カード1', 50, 20, 10, 6, 100, NULL, '../images/cards/card6.webp', 4, 2, 2),
+(3, '強化カード', 1, 10, 10, 10, 5000, NULL, '../images/cards/card8.webp', 0, 0, 0);
 
 -- 進化前カードに進化後カードIDを設定
 UPDATE cards
@@ -180,4 +181,6 @@ WHERE card_id = 1;
 
 -- user_cardsテーブルに所持カードを追加
 INSERT INTO user_cards (user_id, card_id, level, exp, is_favorite)
-VALUES (1, 1, 1, 0, FALSE);
+VALUES 
+(1, 1, 1, 0, FALSE),
+(1, 3, 1, 0, FALSE);
