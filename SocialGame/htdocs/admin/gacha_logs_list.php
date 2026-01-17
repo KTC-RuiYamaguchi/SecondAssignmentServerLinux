@@ -7,17 +7,17 @@ if (empty($_SESSION['is_admin'])) {
 
 require '../db_connect.php';
 
+// ----------------------------
 // 検索フォームの入力取得
 $searchUserId = $_GET['user_id'] ?? '';
 $searchGacha = $_GET['gacha_name'] ?? '';
 $searchFrom = $_GET['date_from'] ?? '';
 $searchTo = $_GET['date_to'] ?? '';
-$page = max(1, intval($_GET['page'] ?? 1)); // ページ番号、1以上
-$perPage = 100; // 1ページあたり件数
+$page = max(1, intval($_GET['page'] ?? 1));
+$perPage = 100;
 $offset = ($page - 1) * $perPage;
 
-// ----------------------------
-// 件数取得（総件数）
+// 件数取得
 $countSql = "
     SELECT COUNT(*) AS cnt
     FROM gacha_logs gl
@@ -37,8 +37,7 @@ $stmt->execute($countParams);
 $totalCount = $stmt->fetchColumn();
 $totalPages = ceil($totalCount / $perPage);
 
-// ----------------------------
-// データ取得（ページ分）
+// データ取得
 $sql = "
     SELECT gl.created_at, u.user_id, u.user_name, g.gacha_name, c.card_name, gl.coins_spent
     FROM gacha_logs gl
@@ -55,16 +54,9 @@ if ($searchTo !== '') { $sql .= " AND gl.created_at <= ?"; $params[] = $searchTo
 
 $sql .= " ORDER BY gl.created_at DESC LIMIT :limit OFFSET :offset";
 $stmt = $pdo->prepare($sql);
-
-// ? プレースホルダーの検索条件をバインド
-foreach ($params as $k => $v) {
-    $stmt->bindValue($k + 1, $v); // ? は 1 から始まる
-}
-
-// LIMIT / OFFSET は整数としてバインド
+foreach ($params as $k => $v) { $stmt->bindValue($k + 1, $v); }
 $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-
 $stmt->execute();
 $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -75,34 +67,44 @@ $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <title>ガチャ履歴一覧</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-h1 { text-align: center; }
-form { text-align: center; margin-bottom: 20px; }
-form input { margin: 0 5px; padding: 4px 6px; border-radius: 4px; border: 1px solid #ccc; }
-form button { padding: 5px 12px; border-radius: 6px; border: none; background:#3498db; color:#fff; cursor:pointer; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
-th { background: #3498db; color: #fff; }
-tr:nth-child(even) { background: #f9f9f9; }
-.pagination { text-align: center; margin-top: 20px; }
-.pagination a { margin: 0 4px; text-decoration: none; padding: 4px 8px; background:#3498db; color:#fff; border-radius:4px; }
-.pagination strong { margin: 0 4px; padding: 4px 8px; background:#ccc; border-radius:4px; }
+body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+
+/* 検索フォーム固定 */
+.search-bar { position: fixed; top:60px; left:0; width:100%; background:#ecf0f1; padding:10px 0; box-shadow:0 2px 6px rgba(0,0,0,0.1); z-index:999; text-align:center; }
+.search-bar input { margin: 0 5px; padding:4px 6px; border-radius:4px; border:1px solid #ccc; }
+.search-bar button { padding:5px 12px; border-radius:6px; border:none; background:#2ecc71; color:#fff; cursor:pointer; }
+.search-bar button:hover { background:#27ae60; }
+
+/* コンテナ */
+.container { max-width:1100px; margin:140px auto 40px; padding:0 20px; }
+
+/* テーブル */
+table { width:100%; border-collapse:collapse; background:#fff; }
+th, td { padding:8px 12px; border:1px solid #ccc; text-align:center; }
+th { background:#3498db; color:#fff; }
+tr:nth-child(even) { background:#f9f9f9; }
+
+/* ページネーション */
+.pagination { text-align:center; margin-top:20px; }
+.pagination a { margin:0 4px; text-decoration:none; padding:4px 8px; background:#3498db; color:#fff; border-radius:4px; }
+.pagination strong { margin:0 4px; padding:4px 8px; background:#ccc; border-radius:4px; }
 </style>
 </head>
 <body>
 
-<h1>ガチャ履歴一覧</h1>
+<?php include 'admin_header.php'; ?>
 
-<!-- 検索フォーム -->
-<form method="get">
-    ユーザーID: <input type="text" name="user_id" value="<?= htmlspecialchars($searchUserId) ?>">
-    ガチャ名: <input type="text" name="gacha_name" value="<?= htmlspecialchars($searchGacha) ?>">
-    日付: <input type="date" name="date_from" value="<?= htmlspecialchars($searchFrom) ?>">～
-    <input type="date" name="date_to" value="<?= htmlspecialchars($searchTo) ?>">
-    <button type="submit">検索</button>
-</form>
+<div class="search-bar">
+    <form method="get">
+        ユーザーID: <input type="text" name="user_id" value="<?= htmlspecialchars($searchUserId) ?>">
+        ガチャ名: <input type="text" name="gacha_name" value="<?= htmlspecialchars($searchGacha) ?>">
+        日付: <input type="date" name="date_from" value="<?= htmlspecialchars($searchFrom) ?>">～
+        <input type="date" name="date_to" value="<?= htmlspecialchars($searchTo) ?>">
+        <button type="submit">検索</button>
+    </form>
+</div>
 
-<!-- 履歴テーブル -->
+<div class="container">
 <table>
     <tr>
         <th>日時</th>
@@ -150,9 +152,6 @@ tr:nth-child(even) { background: #f9f9f9; }
 <?php endif; ?>
 </div>
 
-<div style="margin-top:20px; text-align:center;">
-    <a href="dashboard.php" style="padding:6px 12px; background:#3498db; color:#fff; border-radius:6px; text-decoration:none;">管理画面トップへ戻る</a>
 </div>
-
 </body>
 </html>

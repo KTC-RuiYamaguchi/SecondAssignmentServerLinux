@@ -1,75 +1,118 @@
 <?php
-session_start();
-if (empty($_SESSION['is_admin'])) {
-    header('Location: ../admin_login.php');
-    exit;
-}
-
+require 'admin_header.php'; // 共通ヘッダー読み込み
 require '../db_connect.php';
 
 $message = '';
 
-// ユーザー一覧取得
-$stmt = $pdo->query("SELECT user_id, user_name, user_coins FROM users ORDER BY user_id ASC");
-$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+try {
+    // ユーザー一覧取得
+    $stmt = $pdo->query("SELECT user_id, user_name, user_coins FROM users ORDER BY user_id ASC");
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// コイン付与処理
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $userId = intval($_POST['user_id']);
-    $coins = intval($_POST['coins']);
+    // コイン付与処理
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $userId = intval($_POST['user_id']);
+        $coins = intval($_POST['coins']);
 
-    if ($coins > 0) {
-        $stmt = $pdo->prepare("UPDATE users SET user_coins = user_coins + ? WHERE user_id = ?");
-        $stmt->execute([$coins, $userId]);
-        $message = "ユーザーID {$userId} に {$coins} コインを付与しました。";
-    } else {
-        $message = "付与するコイン数は正の整数で入力してください。";
+        if ($coins > 0) {
+            $stmt = $pdo->prepare("UPDATE users SET user_coins = user_coins + ? WHERE user_id = ?");
+            $stmt->execute([$coins, $userId]);
+            $message = "ユーザーID {$userId} に {$coins} コインを付与しました。";
+        } else {
+            $message = "付与するコイン数は正の整数で入力してください。";
+        }
     }
+
+} catch (PDOException $e) {
+    echo "DB接続エラー: " . $e->getMessage();
+    exit;
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>ユーザーにコインを付与</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-h1 { text-align: center; }
-form { text-align: center; margin-bottom: 20px; }
-form select, form input { margin: 0 5px; padding: 4px 6px; border-radius: 4px; border: 1px solid #ccc; }
-form button { padding: 5px 12px; border-radius: 6px; border: none; background:#2ecc71; color:#fff; cursor:pointer; }
-.message { text-align: center; margin-bottom: 20px; color: #e74c3c; font-weight: bold; }
-table { width: 50%; margin: 0 auto; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 8px 12px; border: 1px solid #ccc; text-align: center; }
-th { background: #3498db; color: #fff; }
-tr:nth-child(even) { background: #f9f9f9; }
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin:0;
+    padding-top: 80px; /* ヘッダー固定分 */
+}
+
+.assign-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.assign-container h1 {
+    text-align: center;
+    color: #3498db;
+    margin-bottom: 25px;
+}
+
+.assign-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.assign-container select,
+.assign-container input[type="number"] {
+    width: 80%;
+    margin: 10px 0;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.assign-container button {
+    padding: 10px 20px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 6px;
+    background: #2ecc71;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.assign-container button:hover {
+    background: #27ae60;
+}
+
+.message {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #27ae60;
+    font-weight: bold;
+}
 </style>
-</head>
-<body>
 
-<h1>ユーザーにコインを付与</h1>
+<div class="assign-container">
+    <h1>ユーザーにコインを付与</h1>
 
-<?php if ($message): ?>
-<div class="message"><?= htmlspecialchars($message) ?></div>
-<?php endif; ?>
+    <?php if($message): ?>
+        <div class="message"><?= htmlspecialchars($message) ?></div>
+    <?php endif; ?>
 
-<form method="post">
-    ユーザー: 
-    <select name="user_id" required>
-        <?php foreach ($users as $user): ?>
-            <option value="<?= $user['user_id'] ?>">
-                <?= htmlspecialchars($user['user_name']) ?> (ID: <?= $user['user_id'] ?>, 所持コイン: <?= $user['user_coins'] ?>)
-            </option>
-        <?php endforeach; ?>
-    </select>
-    付与コイン数: <input type="number" name="coins" min="1" required>
-    <button type="submit">付与する</button>
-</form>
+    <form method="post">
+        <select name="user_id" required>
+            <option value="">ユーザーを選択してください</option>
+            <?php foreach($users as $user): ?>
+                <option value="<?= $user['user_id'] ?>">
+                    <?= htmlspecialchars($user['user_name']) ?> (ID: <?= $user['user_id'] ?>, 所持コイン: <?= $user['user_coins'] ?>)
+                </option>
+            <?php endforeach; ?>
+        </select>
 
-<div style="text-align:center; margin-top:20px;">
-    <a href="dashboard.php" style="padding:6px 12px; background:#3498db; color:#fff; border-radius:6px; text-decoration:none;">管理画面トップへ戻る</a>
+        <input type="number" name="coins" min="1" placeholder="付与するコイン数" required>
+
+        <button type="submit">コインを付与する</button>
+    </form>
 </div>
 
-</body>
-</html>
+<?php require 'admin_footer.php'; ?>

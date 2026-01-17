@@ -6,6 +6,7 @@ if (empty($_SESSION['is_admin'])) {
 }
 
 require '../db_connect.php';
+require 'admin_header.php'; // 共通ヘッダー読み込み
 
 $message = '';
 $editGacha = null;
@@ -49,36 +50,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'ガチャを作成しました';
         }
         // 編集用データを再取得
-        $editGacha = $pdo->prepare("SELECT * FROM gachas WHERE gacha_id = ?");
+        $editGachaStmt = $pdo->prepare("SELECT * FROM gachas WHERE gacha_id = ?");
         $id = $gacha_id ?? $pdo->lastInsertId();
-        $editGacha->execute([$id]);
-        $editGacha = $editGacha->fetch(PDO::FETCH_ASSOC);
+        $editGachaStmt->execute([$id]);
+        $editGacha = $editGachaStmt->fetch(PDO::FETCH_ASSOC);
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<title>ガチャ作成 / 編集</title>
 <style>
-body { font-family: Arial; background:#f5f5f5; padding:20px; }
-.container { max-width: 500px; margin:auto; background:#fff; padding:20px; border-radius:10px; }
-h1 { text-align:center; }
+/* コンテナ */
+.container {
+    max-width: 500px;
+    margin: 120px auto 50px; /* ヘッダー分余白確保 */
+    background:#fff; 
+    padding:25px 20px; 
+    border-radius:12px; 
+    box-shadow:0 8px 20px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* タイトル */
+h1 {
+    text-align:center;
+    color:#3498db;
+    margin-bottom:25px;
+}
+
+/* フォーム */
 form { display:flex; flex-direction:column; }
-label { margin-bottom:10px; font-weight:bold; display:flex; flex-direction:column; }
-input[type="text"], input[type="number"], textarea { padding:8px; margin-top:4px; border-radius:5px; border:1px solid #ccc; width:100%; box-sizing:border-box; }
-input[type="checkbox"] { width:auto; margin-top:8px; }
+label { margin-bottom:15px; font-weight:bold; display:flex; flex-direction:column; }
+input[type="text"], input[type="number"], textarea { 
+    padding:10px; margin-top:6px; border-radius:6px; border:1px solid #ccc; width:100%; box-sizing:border-box; 
+    font-size:14px;
+}
+textarea { resize:vertical; min-height:80px; }
+input[type="checkbox"] { width:auto; margin-top:0; }
+
+/* ボタン */
 .button-group { display:flex; justify-content:space-between; margin-top:20px; }
-button, .back-link { padding:10px 16px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
-button { background:#3498db; color:#fff; }
-button:hover { background:#2980b9; }
-.back-link { text-decoration:none; text-align:center; line-height:32px; background:#ccc; color:#000; }
-.message { text-align:center; color:green; margin-bottom:10px; }
+button, .back-link { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:14px; }
+button { background:#2ecc71; color:#fff; transition:0.2s; }
+button:hover { background:#27ae60; }
+.back-link { text-decoration:none; text-align:center; line-height:32px; background:#bdc3c7; color:#000; transition:0.2s; }
+.back-link:hover { background:#95a5a6; }
+
+/* メッセージ */
+.message { text-align:center; color:green; margin-bottom:15px; font-weight:bold; }
 </style>
-</head>
-<body>
 
 <div class="container">
 <h1><?= $editGacha ? 'ガチャ編集' : '新規ガチャ作成' ?></h1>
@@ -108,7 +127,7 @@ button:hover { background:#2980b9; }
     </label>
 
     <label style="flex-direction:row; align-items:center; font-weight:normal;">
-        <input type="checkbox" name="is_active" <?= (isset($editGacha) || $editGacha['is_active']) ? 'checked' : '' ?>>
+        <input type="checkbox" name="is_active" <?= (!empty($editGacha) && $editGacha['is_active']) ? 'checked' : '' ?>>
         <span style="margin-left:8px;">開催中にする</span>
     </label>
 
@@ -117,8 +136,6 @@ button:hover { background:#2980b9; }
         <a class="back-link" href="gacha_manage.php">一覧へ戻る</a>
     </div>
 </form>
-
 </div>
 
-</body>
-</html>
+<?php require 'admin_footer.php'; ?>

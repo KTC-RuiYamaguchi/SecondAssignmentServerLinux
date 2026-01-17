@@ -44,45 +44,48 @@ $select_enabled = ($mode === 'select');
 <?php foreach ($cards as $c): ?>
 <div id="detail_<?= $c['id'] ?>" class="modal">
     <div class="modal-content">
-        <h3><?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?></h3>
+        <button type="button" class="modal-close" onclick="closeModal('detail_<?= $c['id'] ?>')">×</button>
 
-        <p>Lv <?= (int)$c['level'] ?> / <?= (int)($c['max_level'] ?? 0) ?></p>
-        <p>HP <?= (int)($c['base_hp'] ?? 0) ?></p>
-        <p>ATK <?= (int)($c['base_atk'] ?? 0) ?></p>
-        <p>DEF <?= (int)($c['base_def'] ?? 0) ?></p>
-        <p><?= htmlspecialchars($c['rarity_name'] ?? '', ENT_QUOTES) ?></p>
+        <div class="modal-card-image">
+            <img src="<?= htmlspecialchars($c['thumbnail'], ENT_QUOTES) ?>" alt="<?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?>">
+        </div>
 
-        <?php if (isset($c['is_favorite'])): ?>
-        <form method="post" action="card_action.php">
-            <input type="hidden" name="action"
-                   value="<?= $c['is_favorite'] ? 'unfavorite' : 'favorite' ?>">
-            <input type="hidden" name="user_card_id" value="<?= (int)$c['id'] ?>">
-            <button type="submit">
-                <?= $c['is_favorite'] ? 'お気に入り解除' : 'お気に入り' ?>
-            </button>
-        </form>
-        <?php endif; ?>
+        <h3 class="modal-card-name"><?= htmlspecialchars($c['card_name'], ENT_QUOTES) ?></h3>
+        <p class="modal-card-rarity"><?= htmlspecialchars($c['rarity_name'] ?? '', ENT_QUOTES) ?></p>
 
-        <?php if (!empty($c['max_level'])): ?>
-        <form method="get" action="card_strengthen.php">
-            <input type="hidden" name="target_card_id" value="<?= (int)$c['id'] ?>">
-            <button type="submit">強化</button>
-        </form>
-        <?php endif; ?>
+        <div class="modal-stats">
+            <div class="stat"><span>Lv</span> <?= (int)$c['level'] ?> / <?= (int)($c['max_level'] ?? 0) ?></div>
+            <div class="stat"><span>HP</span> <?= (int)($c['base_hp'] ?? 0) ?></div>
+            <div class="stat"><span>ATK</span> <?= (int)($c['base_atk'] ?? 0) ?></div>
+            <div class="stat"><span>DEF</span> <?= (int)($c['base_def'] ?? 0) ?></div>
+        </div>
 
-        <?php if (!empty($c['evolved_card_id']) && $c['level'] >= $c['max_level']): ?>
-        <form method="post" action="card_action.php">
-            <input type="hidden" name="action" value="evolve">
-            <input type="hidden" name="target_card_id" value="<?= (int)$c['id'] ?>">
-            <button type="submit">進化</button>
-        </form>
-        <?php elseif (!empty($c['evolved_card_id'])): ?>
-            <p>Lv<?= (int)$c['max_level'] ?>で進化可能</p>
-        <?php endif; ?>
+        <div class="modal-actions">
+            <?php if (isset($c['is_favorite'])): ?>
+            <form method="post" action="card_action.php">
+                <input type="hidden" name="action" value="<?= $c['is_favorite'] ? 'unfavorite' : 'favorite' ?>">
+                <input type="hidden" name="user_card_id" value="<?= (int)$c['id'] ?>">
+                <button class="action-btn"><?= $c['is_favorite'] ? 'お気に入り解除' : 'お気に入り' ?></button>
+            </form>
+            <?php endif; ?>
 
-        <button type="button" onclick="closeModal('detail_<?= $c['id'] ?>')">
-            閉じる
-        </button>
+            <?php if (!empty($c['max_level'])): ?>
+            <form method="get" action="card_strengthen.php">
+                <input type="hidden" name="target_card_id" value="<?= (int)$c['id'] ?>">
+                <button class="action-btn strengthen">強化</button>
+            </form>
+            <?php endif; ?>
+
+            <?php if (!empty($c['evolved_card_id']) && $c['level'] >= $c['max_level']): ?>
+            <form method="post" action="card_action.php">
+                <input type="hidden" name="action" value="evolve">
+                <input type="hidden" name="target_card_id" value="<?= (int)$c['id'] ?>">
+                <button class="action-btn evolve">進化</button>
+            </form>
+            <?php elseif (!empty($c['evolved_card_id'])): ?>
+            <p class="evolve-note">Lv<?= (int)$c['max_level'] ?>で進化可能</p>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
 <?php endforeach; ?>
@@ -96,9 +99,8 @@ $select_enabled = ($mode === 'select');
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    padding-bottom: 160px; /* 強化ボタン＆固定フッター対策 */
+    padding-bottom: 160px;
 }
-
 .card-container {
     width:150px;
     height:150px;
@@ -108,19 +110,13 @@ $select_enabled = ($mode === 'select');
     border-radius:10px;
     overflow:hidden;
     box-shadow:0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
 }
-
-.card-container.disabled-card {
-    pointer-events:none;
-    opacity:0.5;
-}
+.card-container:hover { transform: scale(1.05); }
+.card-container.disabled-card { pointer-events:none; opacity:0.5; }
 
 .card-image-wrapper,
-.card-image-wrapper img {
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
+.card-image-wrapper img { width:100%; height:100%; object-fit:cover; }
 
 .holo-canvas {
     position:absolute;
@@ -138,9 +134,7 @@ $select_enabled = ($mode === 'select');
     font-size:20px;
     display:none;
 }
-.card-container.favorite .favorite-star {
-    display:block;
-}
+.card-container.favorite .favorite-star { display:block; }
 
 .level {
     position:absolute;
@@ -164,34 +158,90 @@ $select_enabled = ($mode === 'select');
     opacity:0;
     font-weight:bold;
 }
-.card-container.selected .select-overlay {
-    opacity:1;
-}
+.card-container.selected .select-overlay { opacity:1; }
 
 /* モーダル */
 .modal {
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,0.55);
+    background:rgba(0,0,0,0.6);
     display:flex;
     justify-content:center;
     align-items:center;
     opacity:0;
     pointer-events:none;
     z-index:10000;
+    transition: opacity 0.3s ease;
 }
-.modal.show {
-    opacity:1;
-    pointer-events:auto;
-}
+.modal.show { opacity:1; pointer-events:auto; }
+
 .modal-content {
-    background:#fff;
+    background:#1e1e2f;
+    border-radius:12px;
     padding:20px;
-    border-radius:10px;
-    max-width:360px;
+    width:320px;
+    max-width:90%;
     max-height:80vh;
     overflow-y:auto;
+    position: relative;
+    text-align:center;
+    color:#fff;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
 }
+.modal.show .modal-content { transform: scale(1); }
+
+.modal-close {
+    position:absolute;
+    top:10px;
+    right:10px;
+    background:transparent;
+    border:none;
+    color:#fff;
+    font-size:24px;
+    cursor:pointer;
+}
+
+.modal-card-image img {
+    width:150px;
+    height:150px;
+    border-radius:10px;
+    border:2px solid gold;
+    margin-bottom:10px;
+}
+
+.modal-card-name { font-size:18px; margin:5px 0; }
+.modal-card-rarity { font-size:14px; margin-bottom:10px; color:#ffdd57; }
+
+.modal-stats {
+    display:flex;
+    justify-content:space-around;
+    margin-bottom:15px;
+    font-size:13px;
+    background: rgba(255,255,255,0.05);
+    padding:6px 0;
+    border-radius:6px;
+}
+.modal-stats .stat span { display:block; font-size:11px; color:#aaa; }
+
+.modal-actions { display:flex; flex-direction:column; gap:6px; }
+.action-btn {
+    padding:6px 12px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background: #3498db;
+    color:#fff;
+    font-weight:bold;
+    transition: background 0.2s ease;
+}
+.action-btn:hover { background:#2980b9; }
+.action-btn.strengthen { background:#2ecc71; }
+.action-btn.strengthen:hover { background:#27ae60; }
+.action-btn.evolve { background:#e67e22; }
+.action-btn.evolve:hover { background:#d35400; }
+
+.evolve-note { font-size:12px; color:#ffcc00; margin-top:4px; }
 </style>
 
 <!-- =========================
@@ -214,9 +264,7 @@ function closeModal(id){
     document.getElementById(id)?.classList.remove('show');
 }
 <?php endif; ?>
-</script>
 
-<script>
 // =========================
 // Holo Canvas描画
 // =========================
@@ -249,9 +297,7 @@ document.querySelectorAll(".holo-canvas").forEach(canvas => {
     let progress = 0;
     let lastTime = performance.now();
 
-    function easeInSine(t){
-        return 1 - Math.cos((t*Math.PI)/2);
-    }
+    function easeInSine(t){ return 1 - Math.cos((t*Math.PI)/2); }
 
     maskImg.onload = function(){
         function frame(){
@@ -264,10 +310,7 @@ document.querySelectorAll(".holo-canvas").forEach(canvas => {
                 if(progress >= 1){
                     progress = 1;
                     resting = true;
-                    setTimeout(() => {
-                        progress = 0;
-                        resting = false;
-                    }, restTime);
+                    setTimeout(()=>{progress=0; resting=false;}, restTime);
                 }
             }
 
@@ -275,32 +318,30 @@ document.querySelectorAll(".holo-canvas").forEach(canvas => {
             const sweepX = sweepStartX + (sweepEndX - sweepStartX) * t;
             const sweepY = sweepStartY + (sweepEndY - sweepStartY) * t;
 
-            ctx.clearRect(0, 0, W, H);
-
-            ctx.globalCompositeOperation = "source-over";
-            ctx.fillStyle = "rgba(255,255,255,0.2)";
-            ctx.fillRect(0, 0, W, H);
+            ctx.clearRect(0,0,W,H);
+            ctx.globalCompositeOperation="source-over";
+            ctx.fillStyle="rgba(255,255,255,0.2)";
+            ctx.fillRect(0,0,W,H);
 
             if(!resting){
                 const grad = ctx.createLinearGradient(
                     sweepX, sweepY,
-                    sweepX + sweepWidth,
-                    sweepY + sweepWidth * Math.tan(angle)
+                    sweepX+sweepWidth,
+                    sweepY+sweepWidth*Math.tan(angle)
                 );
-
-                grad.addColorStop(0,   "rgba(255,119,115,0)");
-                grad.addColorStop(0.2, "rgba(255,237,95,0.85)");
-                grad.addColorStop(0.4, "rgba(168,255,95,0.85)");
-                grad.addColorStop(0.6, "rgba(131,255,247,0.85)");
-                grad.addColorStop(0.8, "rgba(216,117,255,0.85)");
-                grad.addColorStop(1,   "rgba(255,119,115,0)");
+                grad.addColorStop(0,"rgba(255,119,115,0)");
+                grad.addColorStop(0.2,"rgba(255,237,95,0.85)");
+                grad.addColorStop(0.4,"rgba(168,255,95,0.85)");
+                grad.addColorStop(0.6,"rgba(131,255,247,0.85)");
+                grad.addColorStop(0.8,"rgba(216,117,255,0.85)");
+                grad.addColorStop(1,"rgba(255,119,115,0)");
 
                 ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, W, H);
+                ctx.fillRect(0,0,W,H);
             }
 
-            ctx.globalCompositeOperation = "destination-in";
-            ctx.drawImage(maskImg, 0, 0, W, H);
+            ctx.globalCompositeOperation="destination-in";
+            ctx.drawImage(maskImg,0,0,W,H);
 
             requestAnimationFrame(frame);
         }
@@ -308,4 +349,3 @@ document.querySelectorAll(".holo-canvas").forEach(canvas => {
     };
 });
 </script>
-

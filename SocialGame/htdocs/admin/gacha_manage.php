@@ -28,17 +28,40 @@ $gachas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <title>ガチャ管理</title>
 <style>
-body { font-family: Arial; background:#f5f5f5; padding:20px; }
-.container { max-width: 800px; margin:auto; background:#fff; padding:20px; border-radius:10px; }
-h1 { text-align:center; }
-table { width:100%; border-collapse:collapse; margin-top:20px; }
-th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-th { background:#3498db; color:#fff; }
-a { text-decoration:none; color:#3498db; margin:0 5px; }
+body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+
+/* コンテナ */
+.container { max-width:1000px; margin:80px auto 40px; padding:20px; background:#fff; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+
+/* ヘッダー */
+header { position: fixed; top:0; left:0; width:100%; z-index:1000; }
+
+/* タイトル */
+h1 { text-align:center; margin-top:0; }
+
+/* メッセージ */
 .message { text-align:center; color:green; margin-bottom:10px; }
+
+/* テーブル */
+.table-wrapper { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; min-width:700px; }
+th, td { border:1px solid #ccc; padding:8px; text-align:center; white-space:nowrap; }
+th { background:#3498db; color:#fff; }
+tr:nth-child(even) { background:#f9f9f9; }
+
+/* リンク */
+a { text-decoration:none; color:#3498db; margin:0 5px; }
+a.button { display:inline-block; padding:4px 8px; background:#3498db; color:#fff; border-radius:4px; }
+a.button:hover { background:#2980b9; }
+
+/* 新規作成リンク */
+.new-gacha { text-align:right; margin-bottom:10px; }
 </style>
 </head>
 <body>
+
+<?php include 'admin_header.php'; ?>
+
 <div class="container">
 <h1>ガチャ一覧</h1>
 
@@ -46,10 +69,11 @@ a { text-decoration:none; color:#3498db; margin:0 5px; }
 <p class="message"><?= htmlspecialchars($message) ?></p>
 <?php endif; ?>
 
-<p style="text-align:right;">
-    <a href="gacha_edit.php">新規ガチャ作成</a>
-</p>
+<div class="new-gacha">
+    <a class="button" href="gacha_edit.php">新規ガチャ作成</a>
+</div>
 
+<div class="table-wrapper">
 <table>
 <tr>
     <th>ID</th>
@@ -74,9 +98,10 @@ a { text-decoration:none; color:#3498db; margin:0 5px; }
 </tr>
 <?php endforeach; ?>
 </table>
+</div>
 
 <p style="text-align:center; margin-top:20px;">
-    <a href="dashboard.php">管理画面トップへ戻る</a>
+    <a class="button" href="dashboard.php">管理画面トップへ戻る</a>
 </p>
 
 </div>
