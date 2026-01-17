@@ -11,7 +11,7 @@ if (!$target_id) {
     exit; 
 }
 
-require 'db_connect.php'; // 共通DB接続
+require 'db_connect.php';
 
 try {
     // 強化対象カード取得
@@ -23,12 +23,12 @@ try {
     ");
     $stmt->execute([$target_id, $_SESSION['user_id']]);
     $target_card = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$target_card) { 
-        echo "対象カードが見つかりません。"; 
-        exit; 
+    if (!$target_card) {
+        echo "対象カードが見つかりません。";
+        exit;
     }
 
-    // 素材用カード取得（対象カードを除外）
+    // 素材用カード取得
     $stmt = $pdo->prepare("
         SELECT uc.*, c.card_name, c.material_exp, c.thumbnail, uc.is_favorite
         FROM user_cards uc
@@ -44,7 +44,7 @@ try {
     exit;
 }
 
-$mode = 'select'; // 強化用モード
+$mode = 'select';
 ?>
 
 <!DOCTYPE html>
@@ -52,32 +52,96 @@ $mode = 'select'; // 強化用モード
 <head>
 <meta charset="UTF-8">
 <title>強化素材選択</title>
+
 <link rel="stylesheet" href="style/card_style.css">
 <link rel="stylesheet" href="style/card_button.css">
+
+<style>
+/* =========================
+   全体レイアウト
+========================= */
+body {
+    margin: 0;
+    padding-bottom: 110px; /* fixed footer 分 */
+    background: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    margin: 16px 0;
+}
+
+/* =========================
+   カード一覧スクロール領域
+========================= */
+.card-area {
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+/* =========================
+   操作ボタン
+========================= */
+.card-action-buttons {
+    position: sticky;
+    bottom: 90px; /* フッター高さ分 */
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: 20px 0;
+    z-index: 200;
+}
+
+.card-action-button {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.card-action-button.back {
+    background: #777;
+    color: #fff;
+}
+</style>
+
 </head>
 <body>
 
-<?php include 'style/footer.php'; ?>
 <h1>
     <?= htmlspecialchars($target_card['card_name'], ENT_QUOTES) ?> の強化素材選択
 </h1>
 
 <?php if (count($cards) === 0): ?>
-    <p>素材にできるカードがありません。</p>
+    <p style="text-align:center;">素材にできるカードがありません。</p>
 <?php else: ?>
+
 <form method="post" action="card_action.php">
     <input type="hidden" name="action" value="strengthen">
     <input type="hidden" name="target_card_id" value="<?= $target_card['id'] ?>">
 
+    <!-- カード一覧 -->
     <?php include 'style/card_list_template.php'; ?>
 
+    <!-- 操作ボタン -->
     <div class="card-action-buttons">
-    <button type="submit" class="card-action-button">強化実行</button>
-    <a href="user_cards_list.php" class="card-action-button back">戻る</a>
-</div>
+        <button type="submit" class="card-action-button">
+            強化実行
+        </button>
+        <a href="user_cards_list.php" class="card-action-button back">
+            戻る
+        </a>
+    </div>
 
 </form>
+
 <?php endif; ?>
+
+<!-- footer は body の最後 -->
+<?php include 'style/footer.php'; ?>
 
 </body>
 </html>
