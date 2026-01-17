@@ -25,14 +25,14 @@
 
 ---
 
-## 5. Docker 環境構築手順
+## 3. Docker 環境構築手順
 
-    docker compose up -d --build
+`docker compose up -d --build`
 
-    Webブラウザからアクセス
+Webブラウザからアクセス
 
-    管理者ページ: http://localhost/admin/dashboard.php
+ユーザー画面:`http://localhost/login.php`
 
-    ユーザー画面: http://localhost/user/card_list.php
+管理者ページ: `http://localhost/admin/admin_login.php`
 
-    管理者ページへのログインパスワードはadmin123です。
+管理者ページへのログインパスワードは`admin123`です。
