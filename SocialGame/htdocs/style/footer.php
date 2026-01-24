@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="style/footer_style.css">
 
 <div class="footer">
+    <a class="footer-button" href="logout.php">ログアウト</a>
     <a class="footer-button" href="dashboard.php">ホーム</a>
     <a class="footer-button" href="user_cards_list.php">カード一覧</a>
     <a class="footer-button" href="gacha_top.php">ガチャ</a>
